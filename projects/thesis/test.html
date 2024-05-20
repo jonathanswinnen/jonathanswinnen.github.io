@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Comparison</title>
+    <style>
+        h1 {
+            text-align: center;
+            padding: 1em;
+        }
+        p {
+            text-align: center;
+            padding: 1em;
+        }
+        .container {
+            margin: 0 auto;
+            width: 700px;
+            text-align: center;
+        }
+        .image-container {
+            width: 700px;
+            margin: 0;
+            text-align: center;
+        }
+        img {
+            width: 200px;
+            height: 200px;
+            margin: 0;
+            padding: 2px;
+        }
+        .radio-container {
+            margin-top: 10px;
+            margin-bottom: 4em;
+            text-align: right;
+        }
+        .radio-container input {
+            margin-left: 1px;
+        }
+        .radio-box {
+            display:inline-block;
+            padding-right: 2em;
+            padding-left: 100px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image comparisons</h1>
+    <p>
+        This test aims to evaluate human perception of 
+        image similarity. You'll be presented with three 
+        images: one real image in the first column, and 
+        two rough attempted reconstructions in the second 
+        column. Your task is to choose which of the two 
+        reconstructions looks visually most similar to the real image.
+        Please go through each of the 50 samples and select 
+        the reconstruction (left or right) you prefer. 
+        Note: These reconstructions may vary significantly 
+        from the original images or even be completely wrong 
+        and thus a bit difficult to compare. Just trust your 
+        instinct and choose the image you prefer, for 
+        whichever reason you think makes the most sense.
+    </p>
+    <div class="container" id="container"></div>
+    <div>
+        <button onclick="toggleScores()">Show Scores</button>
+        <div id="scores" class="hidden"></div>
+    </div>
+
+    <script>
+        // Function to generate random number within a range
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // Function to create radio buttons
+        function createRadioButtons(i, extractedImg1, extractedImg2) {
+            const radioContainer = document.createElement("div");
+            radioContainer.classList.add("radio-container");
+            const radio1 = document.createElement("input");
+            radio1.type = "radio";
+            radio1.name = `sample-${i}`;
+            radio1.value = extractedImg1;
+            radio1.checked = true;
+            radio1.addEventListener("change", updateScores);
+            const radio2 = document.createElement("input");
+            radio2.type = "radio";
+            radio2.name = `sample-${i}`;
+            radio2.value = extractedImg2;
+            radio2.addEventListener("change", updateScores);
+
+            const undecidedRadio = document.createElement("input");
+            undecidedRadio.type = "radio";
+            undecidedRadio.name = `sample-${i}`;
+            undecidedRadio.value = "undecided";
+            undecidedRadio.checked = true;
+            undecidedRadio.classList.add("hidden");
+            undecidedRadio.addEventListener("change", updateScores);
+            
+            const box1 = document.createElement("span");
+            box1.classList.add("radio-box");
+            box1.appendChild(document.createTextNode("left image"));
+            box1.appendChild(radio1);
+            radioContainer.appendChild(box1);
+            const box2 = document.createElement("span");
+            box2.classList.add("radio-box");
+            box2.appendChild(document.createTextNode("right image"));
+            box2.appendChild(radio2);
+            radioContainer.appendChild(box2);
+            radioContainer.appendChild(undecidedRadio);
+            return radioContainer;
+        }
+        // Function to toggle scores visibility
+        function toggleScores() {
+            const scoresDiv = document.getElementById("scores");
+            scoresDiv.classList.toggle("hidden");
+        }
+        // Function to update scores
+        function updateScores() {
+            const radios = document.querySelectorAll("input[type='radio']:checked");
+            let scores = {
+                extracted_img_1: 0,
+                extracted_img_2: 0,
+                undecided: 0
+            };
+            radios.forEach(radio => {
+                scores[radio.value]++;
+            });
+            document.getElementById("scores").textContent = `Scores - MinD-Vis: ${scores.extracted_img_1 || 0}, Ours: ${scores.extracted_img_2 || 0}, Undecided: ${scores.undecided || 0}`;
+        }
+
+        // Function to create image comparison
+        function createImageComparison(extracted_img_1, extracted_img_2) {
+            const container = document.getElementById("container");
+            container.innerHTML = ""; // Clear existing images
+            for (let i = 0; i < Math.min(extracted_img_1.length, extracted_img_2.length, 50); i++) {
+                const div = document.createElement("div");
+                div.classList.add("image-container");
+                
+                const gtImg1 = document.createElement("img");
+                gtImg1.src = `${extracted_img_1[i]}/GT.png`;
+                gtImg1.style.paddingRight = "2em"
+
+                const randomRecImg1 = document.createElement("img");
+                const randomRecImg2 = document.createElement("img");
+                var rad = undefined;
+                if (getRandomInt(0, 1) === 0) {
+                    randomRecImg1.src = `${extracted_img_1[i]}/REC-${getRandomInt(1, 5)}.png`;
+                    randomRecImg2.src = `${extracted_img_2[i]}/REC-${getRandomInt(1, 5)}.png`;
+                    rad = createRadioButtons(i, "extracted_img_1", "extracted_img_2");
+                } else {
+                    randomRecImg1.src = `${extracted_img_2[i]}/REC-${getRandomInt(1, 5)}.png`;
+                    randomRecImg2.src = `${extracted_img_1[i]}/REC-${getRandomInt(1, 5)}.png`;
+                    rad = createRadioButtons(i, "extracted_img_2", "extracted_img_1");
+                }
+
+                div.appendChild(gtImg1);
+                div.appendChild(randomRecImg1);
+                div.appendChild(randomRecImg2);
+                div.appendChild(rad);
+                container.appendChild(div);
+            }
+            updateScores(); // Initial score update
+        }
+
+        // Sample paths of extracted images
+        const extracted_img_1 = [];
+        const extracted_img_2 = [];
+        for (let i = 0; i < 50; i++) {
+            extracted_img_1.push(`extracted_img_1/sample-${i}`);
+            extracted_img_2.push(`extracted_img_2/sample-${i}`);
+        }
+
+        // Initialize image comparison
+        createImageComparison(extracted_img_1, extracted_img_2);
+    </script>
+</body>
+</html>
