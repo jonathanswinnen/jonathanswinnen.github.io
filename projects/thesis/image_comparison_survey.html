@@ -12,6 +12,10 @@
         p {
             padding: 1em;
         }
+        button {
+            margin: 5em;
+            padding: 5em;
+        }
         .container {
             margin: 0 auto;
             width: 700px;
@@ -37,9 +41,11 @@
             margin-left: 1px;
         }
         .radio-box {
-            display:inline-block;
+            display:inline;
             padding-right: 2em;
-            padding-left: 100px;
+        }
+        .firstbox{
+            padding-right:4em;
         }
         .hidden {
             display: none;
@@ -75,6 +81,7 @@
         Jonathan.
         </b><br>
     </p>
+    <h2 style="text-align:center">Which of the two reconstructions on the right <br> looks visually most similar to the real image on the left?</h2>
     <div class="container" id="container"></div>
     <div>
         <p>
@@ -128,12 +135,13 @@
             
             const box1 = document.createElement("span");
             box1.classList.add("radio-box");
-            box1.appendChild(document.createTextNode("left image"));
+            box1.classList.add("firstbox");
+            box1.appendChild(document.createTextNode("1st reconstruction"));
             box1.appendChild(radio1);
             radioContainer.appendChild(box1);
             const box2 = document.createElement("span");
             box2.classList.add("radio-box");
-            box2.appendChild(document.createTextNode("right image"));
+            box2.appendChild(document.createTextNode("2nd reconstruction"));
             box2.appendChild(radio2);
             radioContainer.appendChild(box2);
             radioContainer.appendChild(undecidedRadio);
